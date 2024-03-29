@@ -17,6 +17,10 @@ def move_to_home():
     s.send(b'movel(p[.116,-.3,.2,0,-3.143,0],0.2,0.2,2,0)\n')
     time.sleep(1)
 
+def move_to_starting_pos():
+    # self.movej(x,y,z,rx,ry,rz,relative)
+    pass
+
 def movej(
     x: float = 0,
     y: float = 0,
@@ -47,14 +51,6 @@ def movel(
     s.send(movel_cmd)
     time.sleep(1)
 
-def standby_pos():
-    # self.movej(x,y,z,rx,ry,rz,relative)
-    pass
-
-def home_pos():  
-    # angles = (np.array([   angles   ])*np.pi/180).astype(str)
-    # move_cmd = f'movej([{",".join(angles)}],1,1,0,0)'
-    pass
 
 # initializing
 HOST = '10.10.0.14'
@@ -64,7 +60,7 @@ CAM_PORT = int
 
 # socket 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) test if it works, might not be needed
 s.connect((HOST, PORT))
 
 # gripper
