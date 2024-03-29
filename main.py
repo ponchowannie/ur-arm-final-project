@@ -13,6 +13,10 @@ def gripper_close():
     g.send(b'SET POS 255\n')
     time.sleep(2)
 
+def move_to_home():
+    s.send(b'movel(p[.116,-.3,.2,0,-3.143,0],0.2,0.2,2,0)\n')
+    time.sleep(1)
+
 def movej(
     x: float = 0,
     y: float = 0,
@@ -24,8 +28,8 @@ def movej(
     velocity: float = 0.5,
     blend_radius: float = 0 
 ):
-    move_cmd = f'movej(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})'
-    s.send(move_cmd)
+    movej_cmd = f'movej(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})'
+    s.send(movej_cmd)
     time.sleep(1)
 
 def movel(
@@ -39,8 +43,8 @@ def movel(
     velocity: float = 0.5,
     blend_radius: float = 0
 ):
-    move_cmd = f'movel(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})\n'
-    s.send(move_cmd)
+    movel_cmd = f'movel(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})\n'
+    s.send(movel_cmd)
     time.sleep(1)
 
 def standby_pos():
@@ -87,6 +91,9 @@ while [dx,dy,dradian] == [0,0,0]: # implement new logic here
     dy = ym/1000 
     dradian = theta%180*math.pi/180
 
-# move ur-arm
+# set starting position for ur-arm
+move_to_home()
+
+# move ur-arm relatively
 movej(x=dx, y=dy, rz=dradian)
 movel(y=0.01,z=-0.32) # measure offset of conveyor movement
