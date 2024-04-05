@@ -2,6 +2,7 @@ import socket
 import time
 import numpy as np
 import math
+from conveyor import Conveyor
 
 def gripper_open():
     # OPEN GRIPPER
@@ -14,12 +15,12 @@ def gripper_close():
     time.sleep(2)
 
 def move_to_home():
-    s.send(b'movel(p[.116,-.3,.2,0,-3.143,0],0.2,0.2,2,0)\n')
+    s.send(b'movel(p[ .125, -.315, .0, 2.2, 2.2 , 0],0.2,0.2,2,0)\n')
     time.sleep(1)
 
-def move_to_starting_pos():
-    # self.movej(x,y,z,rx,ry,rz,relative)
-    pass
+# def move_to_starting_pos():
+#     self.movej(x,y,z,rx,ry,rz,relative)
+#     pass
 
 def movej(
     x: float = 0,
@@ -30,10 +31,11 @@ def movej(
     rz: float = 0,
     acceleration: float = 1,
     velocity: float = 0.5,
+    etime: float = 0.0,
     blend_radius: float = 0 
 ):
-    movej_cmd = f'movej(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})'
-    s.send(movej_cmd)
+    movej_cmd = f'movej(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{etime},{blend_radius})'
+    s.send(movej_cmd.encode(encoding='utf-8', errors='ignore'))
     time.sleep(1)
 
 def movel(
@@ -44,19 +46,21 @@ def movel(
     ry: float = 0,
     rz: float = 0,
     acceleration: float = 1,
-    velocity: float = 0.5,
+    velocity: float = 0.1,
+    etime: float = 1.5,
     blend_radius: float = 0
 ):
-    movel_cmd = f'movel(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{time},{blend_radius})\n'
-    s.send(movel_cmd)
-    time.sleep(1)
+    movel_cmd = f'movel(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{etime},{blend_radius})\n'
+    s.send(movel_cmd.encode(encoding='utf-8', errors='ignore'))
+    time.sleep(2)
 
 
 # initializing
 HOST = '10.10.0.14'
-PORT = int
-GRIPPER_PORT = int
-CAM_PORT = int
+PORT = 30003
+GRIPPER_PORT = 63352
+CAM_IP = '10.10.1.10'
+CAM_PORT = 2024
 
 # socket 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,32 +68,80 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 
 # gripper
-g = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-g.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-g.connect((HOST, GRIPPER_PORT))
+def gripper_connection() :
+   global g
+   #Socket communication
+   g = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   g.connect((HOST, GRIPPER_PORT))
+   g.sendall(b'GET POS\n')
+   g_recv = str(g.recv(10), 'UTF-8')
+   if g_recv :
+      g.send(b'SET ACT 1\n')
+      g_recv = str(g.recv(10), 'UTF-8')
+      print (g_recv)
+      time.sleep(3)
+      g.send(b'SET GTO 1\n')
+      g.send(b'SET SPE 255\n')
+      g.send(b'SET FOR 255\n')
+      print ('Gripper Activated')
+
+gripper_connection()
+time.sleep(1)
 
 # camera
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-c.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-c.connect((HOST, CAM_PORT))
+# c.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+c.connect((CAM_IP, CAM_PORT))
 
-dx, dy, dradian = 0, 0, 0
-while [dx,dy,dradian] == [0,0,0]: # implement new logic here
-    # recieve coordinates
-    object_pos = c.recv(255).decode('utf-8')
-    pos_list = [x for x in object_pos.split(',')]
-    xm = pos_list[0]
-    ym = pos_list[1]
-    theta = pos_list[2]
 
-    # in millimeters and radians
-    dx = xm/1000
-    dy = ym/1000 
-    dradian = theta%180*math.pi/180
+c = Conveyor()
+c.run_conveyor()
+time.sleep(2)
+c.stop_conveyor()
+
+# move_to_home()
+# object_pos = c.recv(255).decode('utf-8')
+
+# dx, dy, dradian = 0, 0, 0
+# while [dx,dy,dradian] == [0,0,0]: # implement new logic here
+#     # recieve coordinates
+#     object_pos = c.recv(255).decode('utf-8')
+#     print(object_pos)
+#     if '[,,,,]' not in object_pos:
+#         pos_list = [x for x in object_pos[1:-1].split(',')]
+#         xm = float(pos_list[0])
+#         ym = float(pos_list[1])
+#         theta = float(pos_list[2])
+
+#         # in millimeters and radians
+#         # object_pos from cam - x is robot y
+#         # object_pos from cam - y is robot x
+#         dy = xm/1000
+#         dx = ym/1000 
+
+#         # gripper x offset = 0.175
+#         # gripper z offset = -0.225
+#         # dx += 0.175
+
+#         dradian = theta%180*math.pi/180
+
+# print([dx,dy,dradian])
+# movel(x=dx, y=-dy)
+# object_pos = c.recv(255).decode('utf-8')
+# object_pos = c.recv(255).decode('utf-8')
+# print(object_pos)
+
+
 
 # set starting position for ur-arm
-move_to_home()
 
-# move ur-arm relatively
-movej(x=dx, y=dy, rz=dradian)
-movel(y=0.01,z=-0.32) # measure offset of conveyor movement
+
+
+# # move ur-arm relatively
+# movej(x=dx, y=dy, rz=dradian)
+# movel(y=0.01,z=-0.32) # measure offset of conveyor movement
+
+# gripper_open()
+# movel(z=-0.225)
+# gripper_close()
+# movel(z=0.225)
