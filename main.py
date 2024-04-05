@@ -72,40 +72,42 @@ g.connect()
 c = Camera()
 c.connect()
 
-
+# conveyor
 c = Conveyor()
 c.run_conveyor()
 time.sleep(2)
 c.stop_conveyor()
 
-# move_to_home()
-# object_pos = c.recv(255).decode('utf-8')
+move_to_home()
+object_pos = c.recv(255).decode('utf-8')
 
-# dx, dy, dradian = 0, 0, 0
-# while [dx,dy,dradian] == [0,0,0]: # implement new logic here
-#     # recieve coordinates
-#     object_pos = c.recv(255).decode('utf-8')
-#     print(object_pos)
-#     if '[,,,,]' not in object_pos:
-#         pos_list = [x for x in object_pos[1:-1].split(',')]
-#         xm = float(pos_list[0])
-#         ym = float(pos_list[1])
-#         theta = float(pos_list[2])
+dx, dy, dradian = 0, 0, 0
+while [dx,dy,dradian] == [0,0,0]: # implement new logic here
+    # recieve coordinates
+    object_pos = c.recv(255).decode('utf-8')
+    print(object_pos)
+    if '[,,,,]' not in object_pos:
+        pos_list = [x for x in object_pos[1:-1].split(',')]
+        xm = float(pos_list[0])
+        ym = float(pos_list[1])
+        theta = float(pos_list[2])
 
-#         # in millimeters and radians
-#         # object_pos from cam - x is robot y
-#         # object_pos from cam - y is robot x
-#         dy = xm/1000
-#         dx = ym/1000 
+        # in millimeters and radians
+        # object_pos from cam - x is robot y
+        # object_pos from cam - y is robot x
+        dy = xm/1000
+        dx = ym/1000 
 
-#         # gripper x offset = 0.175
-#         # gripper z offset = -0.225
-#         # dx += 0.175
+        # gripper x offset = 0.175
+        # gripper z offset = -0.225
+        # dx += 0.175
 
-#         dradian = theta%180*math.pi/180
+        dradian = theta%180*math.pi/180
 
-# print([dx,dy,dradian])
-# movel(x=dx, y=-dy)
+print([dx,dy,dradian])
+movel(x=dx, y=-dy)
+
+
 # object_pos = c.recv(255).decode('utf-8')
 # object_pos = c.recv(255).decode('utf-8')
 # print(object_pos)
