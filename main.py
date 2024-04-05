@@ -3,6 +3,8 @@ import time
 import numpy as np
 import math
 from conveyor import Conveyor
+from gripper import Gripper
+from camera import Camera
 
 def gripper_open():
     # OPEN GRIPPER
@@ -17,10 +19,6 @@ def gripper_close():
 def move_to_home():
     s.send(b'movel(p[ .125, -.315, .0, 2.2, 2.2 , 0],0.2,0.2,2,0)\n')
     time.sleep(1)
-
-# def move_to_starting_pos():
-#     self.movej(x,y,z,rx,ry,rz,relative)
-#     pass
 
 def movej(
     x: float = 0,
@@ -54,7 +52,6 @@ def movel(
     s.send(movel_cmd.encode(encoding='utf-8', errors='ignore'))
     time.sleep(2)
 
-
 # initializing
 HOST = '10.10.0.14'
 PORT = 30003
@@ -68,30 +65,12 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 
 # gripper
-def gripper_connection() :
-   global g
-   #Socket communication
-   g = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-   g.connect((HOST, GRIPPER_PORT))
-   g.sendall(b'GET POS\n')
-   g_recv = str(g.recv(10), 'UTF-8')
-   if g_recv :
-      g.send(b'SET ACT 1\n')
-      g_recv = str(g.recv(10), 'UTF-8')
-      print (g_recv)
-      time.sleep(3)
-      g.send(b'SET GTO 1\n')
-      g.send(b'SET SPE 255\n')
-      g.send(b'SET FOR 255\n')
-      print ('Gripper Activated')
-
-gripper_connection()
-time.sleep(1)
+g = Gripper()
+g.connect()
 
 # camera
-c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# c.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-c.connect((CAM_IP, CAM_PORT))
+c = Camera()
+c.connect()
 
 
 c = Conveyor()
