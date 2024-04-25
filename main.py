@@ -43,19 +43,21 @@ CAM_PORT = 2024
 
 # socket 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) test if it works, might not be needed
 s.connect((HOST, PORT))
+
+# gripper
+g = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+g.connect((HOST, GRIPPER_PORT))
 
 # camera
 c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# c.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 c.connect((CAM_IP, CAM_PORT))
 
 ti = 1
 object_pos = c.recv(255).decode('utf-8')
 print(object_pos)
 dx, dy, dradian = 0, 0, 0
-while [dx,dy,dradian] == [0,0,0]: # implement new logic here
+while [dx,dy,dradian] == [0,0,0]:
     # recieve coordinates
     object_pos = c.recv(255).decode('utf-8')
     print(object_pos)

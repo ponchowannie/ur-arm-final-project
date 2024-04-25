@@ -13,6 +13,10 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) test if it works, might not be needed
 s.connect((HOST, PORT))
 
+# gripper
+g = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+g.connect((HOST, GRIPPER_PORT))
+
 def move_to_home():
     s.send(b'movel(p[ .125, -.315, .0, 2.2, 2.2 , 0],0.2,0.2,2,0)\n')
     print('Moved to Home')
