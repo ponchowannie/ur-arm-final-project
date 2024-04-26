@@ -12,11 +12,6 @@ def gripper_close():
     g.send(b'SET POS 255\n')
     time.sleep(0.5)
 
-def move_to_home():
-    s.send(b'movel(p[ .125, -.315, .0, 2.2, 2.2 , 0],0.2,0.2,2,0)\n')
-    print('Moved to Home')
-    time.sleep(1)
-
 def movel(
     x: float = 0,
     y: float = 0,
@@ -32,7 +27,6 @@ def movel(
     movel_cmd = f'movel(pose_add(get_actual_tcp_pose(),p[{x},{y},{z},{rx},{ry},{rz}]),{acceleration},{velocity},{etime},{blend_radius})\n'
     s.send(movel_cmd.encode(encoding='utf-8', errors='ignore'))
     time.sleep(etime)
-
 
 # initializing
 HOST = '10.10.0.14'
